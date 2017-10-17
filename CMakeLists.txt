@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
+include("cmake/HunterGate.cmake")
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.19.123.tar.gz"
+    SHA1 "57d07480686f82ddc916a5980b4f2a18e5954c2b"
+)
+
 # ---[ Project and semantic versioning.
 project(Caffe2 CXX C)
 

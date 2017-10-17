@@ -98,7 +98,7 @@ set(Caffe2_MAIN_LIBS)
 
 # Compile exposed libraries.
 add_library(caffe2 ${Caffe2_CPU_SRCS} $<TARGET_OBJECTS:Caffe_PROTO> $<TARGET_OBJECTS:Caffe2_PROTO>)
-target_link_libraries(caffe2 PRIVATE ${Caffe2_DEPENDENCY_LIBS})
+target_link_libraries(caffe2 PRIVATE protobuf::libprotobuf ${Caffe2_DEPENDENCY_LIBS})
 target_include_directories(caffe2 INTERFACE $<INSTALL_INTERFACE:include>)
 target_compile_options(caffe2 INTERFACE "-std=c++11")
 install(TARGETS caffe2 EXPORT Caffe2Targets DESTINATION lib)

@@ -51,9 +51,9 @@ elseif(BLAS STREQUAL "ATLAS")
   list(APPEND Caffe2_DEPENDENCY_LIBS ${ATLAS_LIBRARIES})
   list(APPEND Caffe2_DEPENDENCY_LIBS cblas)
 elseif(BLAS STREQUAL "OpenBLAS")
-  find_package(OpenBLAS REQUIRED)
-  caffe2_include_directories(${OpenBLAS_INCLUDE_DIR})
-  list(APPEND Caffe2_DEPENDENCY_LIBS ${OpenBLAS_LIB})
+  hunter_add_package(OpenBLAS)
+  find_package(OpenBLAS CONFIG REQUIRED)
+  list(APPEND Caffe2_DEPENDENCY_LIBS OpenBLAS::OpenBLAS)
   list(APPEND Caffe2_DEPENDENCY_LIBS cblas)
 elseif(BLAS STREQUAL "MKL")
   find_package(MKL REQUIRED)
@@ -84,36 +84,20 @@ if(USE_NNPACK)
   endif()
 endif()
 
-# ---[ gflags
-if(USE_GFLAGS)
-  find_package(GFlags)
-  if(GFLAGS_FOUND)
-    set(CAFFE2_USE_GFLAGS 1)
-    caffe2_include_directories(${GFLAGS_INCLUDE_DIRS})
-    list(APPEND Caffe2_DEPENDENCY_LIBS ${GFLAGS_LIBRARIES})
-  else()
-    message(WARNING
-        "gflags is not found. Caffe2 will build without gflags support but it "
-        "is strongly recommended that you install gflags. Suppress this "
-        "warning with -DUSE_GFLAGS=OFF")
-    set(USE_GFLAGS OFF)
-  endif()
-endif()
-
 # ---[ Google-glog
 if(USE_GLOG)
-  find_package(Glog)
-  if(GLOG_FOUND)
-    set(CAFFE2_USE_GOOGLE_GLOG 1)
-    caffe2_include_directories(${GLOG_INCLUDE_DIRS})
-    list(APPEND Caffe2_DEPENDENCY_LIBS ${GLOG_LIBRARIES})
-  else()
-    message(WARNING
-        "glog is not found. Caffe2 will build without glog support but it is "
-        "strongly recommended that you install glog. Suppress this warning "
-        "with -DUSE_GLOG=OFF")
-    set(USE_GLOG OFF)
-  endif()
+  hunter_add_package(glog)
+  find_package(glog CONFIG REQUIRED)
+  set(CAFFE2_USE_GOOGLE_GLOG 1)
+  list(APPEND Caffe2_DEPENDENCY_LIBS glog)
+endif()
+
+# ---[ Google-gflags
+if(USE_GFLAGS)
+  hunter_add_package(gflags)
+  find_package(gflags CONFIG REQUIRED)
+  set(CAFFE2_USE_GFLAGS 1)
+  list(APPEND Caffe2_DEPENDENCY_LIBS gflags-static)
 endif()
 
 # ---[ Googletest and benchmark
@@ -209,19 +193,14 @@ endif()
 # ---[ OpenCV
 if(USE_OPENCV)
   # OpenCV 3
-  find_package(OpenCV QUIET COMPONENTS core highgui imgproc imgcodecs)
-  if(NOT OpenCV_FOUND)
-    # OpenCV 2
-    find_package(OpenCV QUIET COMPONENTS core highgui imgproc)
-  endif()
-  if(OpenCV_FOUND)
-    caffe2_include_directories(${OpenCV_INCLUDE_DIRS})
-    list(APPEND Caffe2_DEPENDENCY_LIBS ${OpenCV_LIBS})
-    message(STATUS "OpenCV found (${OpenCV_CONFIG_PATH})")
+  hunter_add_package(OpenCV)
+  if(OpenCV_VERSION MATCHES "^2\\.")
+    find_package(OpenCV REQUIRED COMPONENTS core highgui imgproc)
   else()
-    message(WARNING "Not compiling with OpenCV. Suppress this warning with -DUSE_OPENCV=OFF")
-    set(USE_OPENCV OFF)
+    find_package(OpenCV REQUIRED COMPONENTS core highgui imgproc imgcodecs)
   endif()
+  list(APPEND Caffe2_DEPENDENCY_LIBS ${OpenCV_LIBS})
+  message(STATUS "OpenCV found (${OpenCV_CONFIG_PATH})")
 endif()
 
 # ---[ FFMPEG
@@ -240,14 +219,8 @@ endif()
 # ---[ EIGEN
 # Due to license considerations, we will only use the MPL2 parts of Eigen.
 set(EIGEN_MPL2_ONLY 1)
-find_package(Eigen3)
-if(EIGEN3_FOUND)
-  message(STATUS "Found system Eigen at " ${EIGEN3_INCLUDE_DIRS})
-  caffe2_include_directories(${EIGEN3_INCLUDE_DIRS})
-else()
-  message(STATUS "Did not find system Eigen. Using third party subdirectory.")
-  caffe2_include_directories(${PROJECT_SOURCE_DIR}/third_party/eigen)
-endif()
+hunter_add_package(Eigen)
+find_package(Eigen3 CONFIG REQUIRED)
 
 # ---[ Python + Numpy
 if(BUILD_PYTHON)
